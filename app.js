@@ -6,6 +6,7 @@ const logger = require('morgan');
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
+const booksRouter = require('./routes/books');
 
 const app = express();
 
@@ -19,6 +20,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/books/', booksRouter);
+
+// middleware : no path ->
+// run for every request that reachest his line
+app.use((req, res, next) => {
+  console.log("cookie user: " + req.cookies.user);
+
+  //console.log(req.query);
+
+  if (req.query.u != undefined) { // if there is a u parameter in the query string
+    // record that username, create/store login object onto req
+    req.login = {
+      username: req.query.u.toLowerCase().trim(),
+      auth: true
+    };
+
+  } else {
+    req.login = {
+      username: null,
+      auth: false
+    };
+  }
+
+  next();
+})
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
